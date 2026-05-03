@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       subject: '🏠 오늘의 맞춤 주거 공고 알림',
       react: HousingEmail({ 
         userName: '테스트 사용자',
-        announcements: announcements.map((a: any) => ({
+        announcements: announcements.map((a: { title: string; regionName: string; provider: string; url: string }) => ({
           title: a.title,
           region: a.regionName,
           provider: a.provider,
