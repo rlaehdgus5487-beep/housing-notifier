@@ -46,8 +46,6 @@ export const HousingEmail = ({
                   <Text style={cardTitle}>{item.title}</Text>
                   <Text style={cardRegion}>📍 {item.region}</Text>
                   <Button
-                    pX={12}
-                    pY={12}
                     style={button}
                     href={item.url}
                   >
@@ -141,6 +139,7 @@ const button = {
   textAlign: "center" as const,
   display: "block",
   width: "100%",
+  padding: "12px 12px",
 };
 
 const hr = {
