@@ -11,20 +11,30 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: '이메일과 관심 지역은 필수입니다.' }, { status: 400 });
     }
 
-    if (!process.env.DATABASE_URL || process.env.DATABASE_URL.startsWith('https')) {
-      // DB가 아직 연결되지 않았거나 URL 형식이 잘못된 경우 (예: Supabase API URL이 잘못 들어간 경우)
-      console.log('Mock Subscription (DB URL missing or wrong format):', { email, regions });
+    const dbUrl = process.env.DATABASE_URL?.replace(/["']/g, ''); // 따옴표 제거
+
+    if (!dbUrl || dbUrl.startsWith('https')) {
       return NextResponse.json({ 
-        success: true, 
-        message: '현재 DB 연결 설정이 완료되지 않아 임시로 성공 처리되었습니다. 실제 배포 시 올바른 DATABASE_URL(postgresql://...)이 필요합니다.',
-        mock: true 
-      });
+        success: false, 
+        error: '데이터베이스 연결 설정 오류',
+        details: 'DATABASE_URL이 올바르지 않습니다. https://... 형식이 아닌 postgresql://... 형식의 DB 접속 주소가 필요합니다.'
+      }, { status: 400 });
     }
 
     // 1. 사용자 찾기 또는 생성
-    let user = await db.query.users.findFirst({
-      where: eq(users.email, email)
-    });
+    let user;
+    try {
+      user = await db.query.users.findFirst({
+        where: eq(users.email, email)
+      });
+    } catch (dbError: any) {
+      console.error('Database connection error:', dbError);
+      return NextResponse.json({ 
+        success: false, 
+        error: '데이터베이스 연결 실패',
+        details: '테이블이 존재하지 않거나 DB 접속 정보가 틀립니다. npx drizzle-kit push를 실행했는지 확인하세요. 에러: ' + dbError.message
+      }, { status: 500 });
+    }
 
     if (!user) {
       const [newUser] = await db.insert(users).values({ email }).returning();
