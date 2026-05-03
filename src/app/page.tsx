@@ -109,7 +109,7 @@ export default function Home() {
       if (data.success) {
         alert(data.message || '구독이 성공적으로 완료되었습니다! 매일 낮 12시에 알림을 보내드립니다.');
       } else {
-        alert('구독 실패: ' + (data.error || '알 수 없는 에러'));
+        alert(`구독 실패: ${data.error || '알 수 없는 에러'}${data.details ? `\n상세: ${data.details}` : ''}`);
       }
     } catch (error) {
       alert('에러 발생: ' + String(error));

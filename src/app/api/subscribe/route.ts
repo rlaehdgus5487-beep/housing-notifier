@@ -11,12 +11,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: '이메일과 관심 지역은 필수입니다.' }, { status: 400 });
     }
 
-    if (!process.env.DATABASE_URL) {
-      // DB가 아직 연결되지 않은 상태(로컬 테스트)를 위한 처리
-      console.log('Mock Subscription:', { email, regions });
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL.startsWith('https')) {
+      // DB가 아직 연결되지 않았거나 URL 형식이 잘못된 경우 (예: Supabase API URL이 잘못 들어간 경우)
+      console.log('Mock Subscription (DB URL missing or wrong format):', { email, regions });
       return NextResponse.json({ 
         success: true, 
-        message: '현재 DB가 연결되지 않아 임시로 성공 처리되었습니다. 실제 배포 시 DB에 저장됩니다.',
+        message: '현재 DB 연결 설정이 완료되지 않아 임시로 성공 처리되었습니다. 실제 배포 시 올바른 DATABASE_URL(postgresql://...)이 필요합니다.',
         mock: true 
       });
     }
@@ -43,8 +43,12 @@ export async function POST(request: Request) {
     );
 
     return NextResponse.json({ success: true, message: '구독이 완료되었습니다.' });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Subscription error:', error);
-    return NextResponse.json({ success: false, error: '구독 처리 중 오류가 발생했습니다.' }, { status: 500 });
+    return NextResponse.json({ 
+      success: false, 
+      error: '구독 처리 중 오류가 발생했습니다.',
+      details: error.message || String(error)
+    }, { status: 500 });
   }
 }

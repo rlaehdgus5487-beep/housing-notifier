@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, varchar } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, varchar, integer } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
@@ -8,7 +8,7 @@ export const users = pgTable('users', {
 
 export const userRegions = pgTable('user_regions', {
   id: serial('id').primaryKey(),
-  userId: serial('user_id').references(() => users.id),
+  userId: integer('user_id').references(() => users.id),
   regionName: varchar('region_name', { length: 255 }).notNull(), // e.g., "서울특별시 강남구"
 });
 
